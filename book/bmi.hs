@@ -25,3 +25,7 @@ cylinder r h =
         topArea = pi * r ^ 2
     in sideArea + 2 * topArea
 
+maxL :: (Ord a) => [a] -> a
+maxL [] = error "Cant tell max on empty list"
+maxL [x] = x
+maxL (x:l) = max x (maxL l) 

@@ -39,3 +39,5 @@ quicksort (x:xs) =
     let smaller = [y | y <- xs, y < x ]
         larger = [y|y<-xs,y >=x]
     in quicksort smaller ++ [x] ++ quicksort larger
+
+group' :: (Eq a) => [a] -> [[a]]
