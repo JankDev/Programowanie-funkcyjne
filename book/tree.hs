@@ -16,3 +16,7 @@ treeElem elem (Node n l r)
                 | elem == n = True
                 | elem > n = treeElem elem r
                 | otherwise = treeElem elem l
+
+instance Functor Tree where
+    fmap _ EmptyTree = EmptyTree
+    fmap f (Node n l r) = Node (f n) (fmap f l) (fmap f r)

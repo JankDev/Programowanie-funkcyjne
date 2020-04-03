@@ -53,3 +53,25 @@ instance Show TrafficLight where
 That’s all there is to subclassing—it’s just a class constraint on a class
 declaration!
 -}
+
+class YesNo a where
+	yesNo :: a -> Bool
+
+instance YesNo Int where
+	yesNo 0 = False
+	yesNo _ = True
+
+instance YesNo [a] where
+	yesNo [] = False
+	yesNo _ = True
+
+instance YesNo Bool where
+	yesNo = id
+
+instance YesNo (Maybe a) where
+    yesNo (Just _) = True
+    yesNo Nothing = False
+    
+{- instance Functor Maybe where
+    fmap f (Just x) = Just (f x)
+    fmap f Nothing = Nothing -}
