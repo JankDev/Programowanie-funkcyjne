@@ -1,0 +1,3 @@
+buy coffe
+go jogging
+learn haskell
