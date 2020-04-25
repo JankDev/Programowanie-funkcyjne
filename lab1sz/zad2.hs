@@ -1,4 +1,7 @@
 data BinaryTree a = EmptyTree | Node a (BinaryTree a) (BinaryTree a) deriving Show
+instance Functor BinaryTree where
+    fmap _ EmptyTree = EmptyTree
+    fmap f (Node n l r) = Node (f n) (fmap f l) (fmap f r)
 
 empty' :: BinaryTree a-> Bool
 empty' EmptyTree = True
@@ -14,7 +17,13 @@ insert' elem (Node n l r)
                 | elem > n = Node n l (insert' elem r)
                 | otherwise = Node n (insert' elem l) r
 
--- A binary tree is always binary
+isBst :: (Ord a) => BinaryTree a -> Bool
+isBst EmptyTree = True
+isBst (Node n EmptyTree EmptyTree) = True
+isBst (Node n (Node nl ll rl) (Node nr lr rr))
+    | n <= nl || n > nr = False
+    | otherwise = isBst ll && isBst rl && isBst lr && isBst rr
+
 floors :: BinaryTree a -> Int
 floors EmptyTree = 0
 floors (Node _ EmptyTree EmptyTree) = 1
@@ -25,15 +34,29 @@ isBalanced EmptyTree = True
 isBalanced (Node n EmptyTree EmptyTree) = True
 isBalanced (Node n l r) = (abs (floors l - floors r) < 2) && isBalanced l && isBalanced r
 
-treeElem :: (Ord a) => a -> BinaryTree a -> Bool
-treeElem _ EmptyTree = False
-treeElem elem (Node n l r)
+search :: (Ord a) => a -> BinaryTree a -> Bool
+search _ EmptyTree = False
+search elem (Node n l r)
                 | elem == n = True
-                | elem > n = treeElem elem r
-                | otherwise = treeElem elem l
+                | elem > n = search elem r
+                | otherwise = search elem l
 
 tmap :: (Num a) => (a -> a) -> BinaryTree a-> BinaryTree a
 tmap = fmap
+
+data Kind = VLR | LVR | LRV | VRL | RVL | RLV deriving(Eq)
+
+traverse' :: (Ord a) => BinaryTree a -> Kind -> [a]
+traverse' (Node n EmptyTree EmptyTree) _ = [n]
+traverse' EmptyTree _ = []
+traverse' (Node n l r) kind
+    | kind == VLR = [n]++(traverse' l kind) ++ (traverse' r kind)
+    | kind == LVR = (traverse' l kind) ++ [n] ++ (traverse' r kind)
+    | kind == LRV = (traverse' l kind) ++ (traverse' r kind) ++ [n]
+    | kind == VRL = [n] ++ (traverse' r kind) ++ (traverse' l kind)
+    | kind == RVL = (traverse' r kind) ++ [n] ++ (traverse' l kind)
+    | kind == RLV = (traverse' r kind) ++ (traverse' l kind) ++ [n]
+    | otherwise = error "Not known traversal"
 
 leaves :: BinaryTree a -> [a]
 leaves EmptyTree = []
@@ -54,19 +77,40 @@ toString EmptyTree = ""
 toString (Node n EmptyTree EmptyTree) = show n ++ ""
 toString (Node n l r) = show n ++"("++ toString l ++ "," ++ toString r ++ ")"
 
-remove :: Tree a -> a -> Tree a
-remove (Node n EmptyTree EmptyTree) n = EmptyTree
-remove (Node n l r) n 
-    | empty' l = r
-    | empty' r = l
-    | otherwise = merge l r
+findMin :: (Ord a) => BinaryTree a -> a
+findMin (Node n EmptyTree _) = n
+findMin (Node n l r) = findMin l
 
--- Because it wasn't stated that the tree should balanced we just merge without balancing it
-merge :: Tree a -> Tree a -> Tree a
-merge (Node n l r) (Node n2 l2 r2) = Node n l2 r2 --TODO
+findMax :: (Ord a) => BinaryTree a -> a
+findMax (Node n _ EmptyTree) = n
+findMax (Node n l r) = findMax r
 
-instance Functor BinaryTree where
-    fmap _ EmptyTree = EmptyTree
-    fmap f (Node n l r) = Node (f n) (fmap f l) (fmap f r)
+root :: (Ord a) => BinaryTree a -> a
+root (Node n _ _) = n
 
-tree = Node 4 (Node 3 (Node 2 EmptyTree EmptyTree) EmptyTree) (Node 6 (Node 5 EmptyTree EmptyTree) (Node 7 EmptyTree EmptyTree))
+remove ::(Ord a) => BinaryTree a -> a -> BinaryTree a
+remove (Node n EmptyTree EmptyTree) elem | n == elem = EmptyTree
+remove (Node n EmptyTree (Node n2 l r)) elem | n == elem = Node n2 l r
+remove (Node n (Node n2 l r) EmptyTree) elem | n == elem = Node n2 l r
+remove (Node n l r) elem
+    | n == elem = let tmin = findMin r in Node tmin l (remove r tmin)
+    | elem > root l = Node n l (remove r elem)
+    | otherwise = Node n (remove l elem) r
+
+
+merge ::(Ord a) => BinaryTree a -> BinaryTree a -> BinaryTree a
+merge (Node n l r) (Node n2 l2 r2)
+    | lmax < rmin = Node rmin (Node n l r) (remove (Node n2 l2 r2) rmin)
+    | lmin > rmax = Node lmin (Node n2 l2 r2) (remove (Node n l r) lmin)
+    | (lmin == rmax)  = Node lmin (remove (Node n l r) lmin) (remove (Node n2 l2 r2) lmin)
+    | (lmax == rmin)  = Node lmax (remove (Node n l r) lmax) (remove (Node n2 l2 r2) lmax)
+    | otherwise = (Node (max n n2) (merge l r2) (merge l2 r)) 
+        where lmax = (findMax (Node n l r)) 
+              rmin = (findMin (Node n2 l2 r2))
+              lmin = (findMin (Node n l r)) 
+              rmax = (findMax (Node n2 l2 r2))
+              
+
+tree = Node 4 treeL treeR
+treeL = (Node 3 (Node 2 EmptyTree EmptyTree) EmptyTree)
+treeR = (Node 6 (Node 5 EmptyTree EmptyTree) (Node 7 EmptyTree EmptyTree))
