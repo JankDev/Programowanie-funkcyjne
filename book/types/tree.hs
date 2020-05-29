@@ -1,3 +1,6 @@
+import qualified Data.Foldable as F
+import Data.Monoid
+
 data Tree a = EmptyTree | Node a (Tree a) (Tree a) deriving Show
 
 isEmpty :: Tree a-> Bool
@@ -44,6 +47,12 @@ toString (Node n l r) = show n ++"("++ toString l ++ "," ++ toString r ++ ")"
 instance Functor Tree where
     fmap _ EmptyTree = EmptyTree
     fmap f (Node n l r) = Node (f n) (fmap f l) (fmap f r)
+
+instance F.Foldable Tree where
+    foldMap _ EmptyTree = mempty
+    foldMap f (Node n left right) = F.foldMap f left `mappend`
+                                    f n `mappend`
+                                    F.foldMap f right
 
 
 tree = Node 4 (Node 3 (Node 2 EmptyTree EmptyTree) EmptyTree) (Node 6 (Node 5 EmptyTree EmptyTree) (Node 7 EmptyTree EmptyTree))
