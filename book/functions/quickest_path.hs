@@ -23,4 +23,4 @@ groupsOf :: Int -> [Int] -> [[Int]]
 groupsOf 0 _ = undefined
 groupsOf 1 l = [l]
 groupsOf _ [] = []
-groupsOf n l = (take n l):(groupsOf n $ drop n l)
+groupsOf n l = (take n l):(groupsOf n $ drop n l)angular german

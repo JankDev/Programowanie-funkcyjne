@@ -17,6 +17,7 @@ insert' elem (Node n l r)
                 | elem > n = Node n l (insert' elem r)
                 | otherwise = Node n (insert' elem l) r
 
+-- is Binary Search tree
 isBst :: (Ord a) => BinaryTree a -> Bool
 isBst EmptyTree = True
 isBst (Node n EmptyTree EmptyTree) = True

@@ -1,4 +1,5 @@
 import qualified Data.Foldable as F
+import Control.Monad.State
 import Data.Monoid
 
 data Tree a = EmptyTree | Node a (Tree a) (Tree a) deriving Show
@@ -56,3 +57,14 @@ instance F.Foldable Tree where
 
 
 tree = Node 4 (Node 3 (Node 2 EmptyTree EmptyTree) EmptyTree) (Node 6 (Node 5 EmptyTree EmptyTree) (Node 7 EmptyTree EmptyTree))
+
+treeInsertWithState :: (Ord a) => a -> State (Tree a) ()
+treeInsertWithState elem = State $ \old -> ((), treeInsert elem old)
+
+
+treeRemoveWithState :: (Ord a) => a -> State (Tree a) a
+treeRemoveWithState elem = state $ \old -> (elem, treeRemove elem old)
+
+treeElemWithState :: (Ord a) => a -> State (Tree a) Bool
+treeElemWithState elem = state $ \old -> (treeElem elem old, old)
+
