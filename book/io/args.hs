@@ -2,5 +2,6 @@ import System.IO
 import System.Environment
 
 main = do
-    (command:args) <- getArgs
-    putStrLn command
+    putStrLn "efsf"
+    return()
+    putStrLn "heh"
